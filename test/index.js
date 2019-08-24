@@ -27,7 +27,7 @@ describe('hapi-authorization', () => {
 			handler: function (request, h) {return new Error("uncaught exception test");}
 		}});
     await server.register(plugin, {});
-    
+
     server.start().then(() => {
       server.inject({method: 'GET', url: '/'}).then((res) => {
         internals.asyncCheck(() => {
@@ -56,7 +56,7 @@ describe('hapi-authorization', () => {
 
 	it('should allow hapi-authorization for routes secured in the route config', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -74,7 +74,7 @@ describe('hapi-authorization', () => {
 
 	it('should allow hapi-authorization for routes secured globally with authentication', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.auth.default('default');
@@ -179,7 +179,7 @@ describe('hapi-authorization', () => {
 
 	it('should error with global auth set but auth false on route', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.auth.default('default');
@@ -199,7 +199,7 @@ describe('hapi-authorization', () => {
 
 	it('Validates the hapi-authorization routes parameters', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -219,7 +219,7 @@ describe('hapi-authorization', () => {
 
 	it('ignores routes without hapi-authorization instructions', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.route({ method: 'GET', path: '/', handler: (request, h) => { return "TEST"; } });
 		server.register(plugin, {}).then(() => {
 
@@ -233,7 +233,7 @@ describe('hapi-authorization', () => {
 
 	it('Validates the hapi-authorization plugin options do not contain random options', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -265,7 +265,7 @@ describe('hapi-authorization', () => {
 
 	it('Validates the hapi-authorization plugin option "roles" must be an array', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -296,7 +296,7 @@ describe('hapi-authorization', () => {
 
 	it('Validates the hapi-authorization plugin option "roleHierarchy" must be an array', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -320,14 +320,15 @@ describe('hapi-authorization', () => {
 		server.register(plugin, {}).catch((err) => {
 			expect(err).to.not.be.undefined;
 			expect(err).to.be.instanceOf(Error);
-			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array');
+			console.log(err.message)
+			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array "roleHierarchy" must be an object');
 			done();
 		});
 	});
 
 	it('Validates the hapi-authorization plugin option "hierarchy" must be a boolean', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -356,9 +357,41 @@ describe('hapi-authorization', () => {
 		});
 	});
 
+	it('Validates the hapi-authorization plugin option "userPath" must be a string', (done) => {
+		const server = new Hapi.Server();
+
+		server.auth.scheme('custom', internals.authSchema);
+		server.auth.strategy('default', 'custom', {});
+		server.route({ method: 'GET', path: '/', options: {
+				auth: 'default',
+				plugins: {'hapiAuthorization': {bla: 'USER'}},
+				handler: (request, h) => { return "TEST";}
+			}});
+
+		const plugin = {
+			name: 'hapiAuthorization',
+			version: '0.0.0',
+			plugin: Plugin.plugin,
+			path: libpath,
+			options: {
+				roles: ['OWNER', 'MANAGER', 'EMPLOYEE'],
+				hierarchy: false,
+				roleHierarchy: ['OWNER', 'MANAGER', 'EMPLOYEE'],
+				userPath: 120
+			}
+		};
+
+		server.register(plugin, {}).catch((err) => {
+			expect(err).to.not.be.undefined;
+			expect(err).to.be.instanceOf(Error);
+			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "userPath" must be a string');
+			done();
+		});
+	});
+
 	it('Validates the hapi-authorization plugin options are optional', (done) => {
 		const server = new Hapi.Server();
-		
+
 		server.auth.scheme('custom', internals.authSchema);
 		server.auth.strategy('default', 'custom', {});
 		server.route({ method: 'GET', path: '/', options: {
@@ -385,7 +418,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -406,7 +439,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -426,7 +459,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -447,7 +480,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -468,7 +501,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -490,7 +523,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -512,7 +545,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('returns an error when a user with a role that is not a valid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -534,7 +567,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Allows access to protected method for a single role', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -556,7 +589,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -577,7 +610,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Returns an error when a single role is not one of the allowed roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -599,7 +632,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -634,7 +667,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -669,7 +702,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when any of a user\'s roles are unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -705,7 +738,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -727,7 +760,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -749,7 +782,7 @@ describe('hapi-authorization', () => {
 			// TODO
 			it.skip('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -774,7 +807,7 @@ describe('hapi-authorization', () => {
 
 			it('validates that the aclQuery parameter is a function', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -795,7 +828,7 @@ describe('hapi-authorization', () => {
 
 			it('fetches the wanted entity using the query', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -818,7 +851,7 @@ describe('hapi-authorization', () => {
 
 			it('handles not found entities', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -840,7 +873,7 @@ describe('hapi-authorization', () => {
 
 			it('handles query errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -865,7 +898,7 @@ describe('hapi-authorization', () => {
 
 			it('requires aclQuery when validateEntityAcl is true', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -886,7 +919,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when the entity was not found', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -911,7 +944,7 @@ describe('hapi-authorization', () => {
 
 			it('declines requests from unauthorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -937,7 +970,7 @@ describe('hapi-authorization', () => {
 
 			it('handles validator errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -963,7 +996,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for authorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -995,7 +1028,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity has no user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1021,7 +1054,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity doesn\'t belong to the authenticated user', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1047,7 +1080,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for user with permissions', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1073,7 +1106,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom user id field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1100,7 +1133,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom entity user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1131,7 +1164,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when query parameter is missing', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1165,7 +1198,7 @@ describe('hapi-authorization', () => {
 
 			it('validates query parameter', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1199,7 +1232,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when payload parameter is missing', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1233,7 +1266,7 @@ describe('hapi-authorization', () => {
 
 			it('validates payload parameter', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1287,7 +1320,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1308,7 +1341,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with an invalid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1329,7 +1362,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1349,7 +1382,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1370,7 +1403,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1391,7 +1424,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1412,7 +1445,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1433,7 +1466,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with a role that is not a valid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1454,7 +1487,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for a single role', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1475,7 +1508,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1495,7 +1528,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a single role is not one of the allowed roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1517,7 +1550,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1552,7 +1585,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1587,7 +1620,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when any of a user\'s roles are unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1622,7 +1655,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1643,7 +1676,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1664,7 +1697,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1689,7 +1722,7 @@ describe('hapi-authorization', () => {
 
 			it('validates that the aclQuery parameter is a function', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1710,7 +1743,7 @@ describe('hapi-authorization', () => {
 
 			it('fetches the wanted entity using the query', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1733,7 +1766,7 @@ describe('hapi-authorization', () => {
 
 			it('handles not found entities', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1755,7 +1788,7 @@ describe('hapi-authorization', () => {
 
 			it('handles query errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1780,7 +1813,7 @@ describe('hapi-authorization', () => {
 
 			it('requires aclQuery when validateEntityAcl is true', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1801,7 +1834,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when the entity was not found', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1826,7 +1859,7 @@ describe('hapi-authorization', () => {
 
 			it('declines requests from unauthorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1852,7 +1885,7 @@ describe('hapi-authorization', () => {
 
 			it('handles validator errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1878,7 +1911,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for authorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1910,7 +1943,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity has no user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1936,7 +1969,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity doesn\'t belong to the authenticated user', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1962,7 +1995,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for user with permissions', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -1988,7 +2021,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom user id field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2015,7 +2048,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom entity user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2062,7 +2095,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2083,7 +2116,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with an invalid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2104,7 +2137,7 @@ describe('hapi-authorization', () => {
 
 			it('Restricts access to protected route for multiple authorized roles that are not defined as plugin roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2125,7 +2158,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2146,7 +2179,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2167,7 +2200,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2188,7 +2221,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2209,7 +2242,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with a role that is not a valid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2230,7 +2263,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for a single role', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2251,7 +2284,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2271,7 +2304,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a single role is not one of the allowed roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2293,7 +2326,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2328,7 +2361,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2363,7 +2396,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when any of a user\'s roles are unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2398,7 +2431,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2419,7 +2452,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2440,7 +2473,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2465,7 +2498,7 @@ describe('hapi-authorization', () => {
 
 			it('validates that the aclQuery parameter is a function', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2486,7 +2519,7 @@ describe('hapi-authorization', () => {
 
 			it('fetches the wanted entity using the query', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2509,7 +2542,7 @@ describe('hapi-authorization', () => {
 
 			it('handles not found entities', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2531,7 +2564,7 @@ describe('hapi-authorization', () => {
 
 			it('handles query errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2557,7 +2590,7 @@ describe('hapi-authorization', () => {
 
 			it('requires aclQuery when validateEntityAcl is true', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2578,7 +2611,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when the entity was not found', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2603,7 +2636,7 @@ describe('hapi-authorization', () => {
 
 			it('declines requests from unauthorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2629,7 +2662,7 @@ describe('hapi-authorization', () => {
 
 			it('handles validator errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2655,7 +2688,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for authorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2688,7 +2721,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity has no user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2714,7 +2747,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity doesn\'t belong to the authenticated user', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2740,7 +2773,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for user with permissions', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2766,7 +2799,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom user id field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2793,7 +2826,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom entity user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2840,7 +2873,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2861,7 +2894,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with an invalid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2882,7 +2915,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2902,7 +2935,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2923,7 +2956,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2944,7 +2977,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2965,7 +2998,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -2986,7 +3019,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with a role that is not a valid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3007,7 +3040,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for a single role', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3028,7 +3061,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3048,7 +3081,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a single role is not one of the allowed roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3105,7 +3138,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3175,7 +3208,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3196,7 +3229,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3217,7 +3250,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3242,7 +3275,7 @@ describe('hapi-authorization', () => {
 
 			it('validates that the aclQuery parameter is a function', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3263,7 +3296,7 @@ describe('hapi-authorization', () => {
 
 			it('fetches the wanted entity using the query', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3286,7 +3319,7 @@ describe('hapi-authorization', () => {
 
 			it('handles not found entities', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3308,7 +3341,7 @@ describe('hapi-authorization', () => {
 
 			it('handles query errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3333,7 +3366,7 @@ describe('hapi-authorization', () => {
 
 			it('requires aclQuery when validateEntityAcl is true', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3354,7 +3387,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when the entity was not found', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3379,7 +3412,7 @@ describe('hapi-authorization', () => {
 
 			it('declines requests from unauthorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3405,7 +3438,7 @@ describe('hapi-authorization', () => {
 
 			it('handles validator errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3431,7 +3464,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for authorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3464,7 +3497,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity has no user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3490,7 +3523,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity doesn\'t belong to the authenticated user', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3516,7 +3549,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for user with permissions', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3542,7 +3575,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom user id field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3569,7 +3602,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom entity user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3616,7 +3649,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3637,7 +3670,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with an invalid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3658,7 +3691,7 @@ describe('hapi-authorization', () => {
 
 			it('Restricts access to protected route for multiple authorized roles that are not defined as plugin roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3679,7 +3712,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3700,7 +3733,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3721,7 +3754,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3742,7 +3775,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with unsuited role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3763,7 +3796,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when a user with a role that is not a valid role tries to access a role protected route', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3784,7 +3817,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for a single role', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3805,7 +3838,7 @@ describe('hapi-authorization', () => {
 
 			it('Allows access to protected method for multiple authorized roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3825,7 +3858,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a single role is not one of the allowed roles', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3847,7 +3880,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3882,7 +3915,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when a user\'s role is unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3917,7 +3950,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when any of a user\'s roles are unsuited due to hierarchy being disabled', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3952,7 +3985,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying role (singular) with an array', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3973,7 +4006,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying roles (plural) with a string', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -3994,7 +4027,7 @@ describe('hapi-authorization', () => {
 
 			it('Returns an error when specifying both role and roles as options', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4019,7 +4052,7 @@ describe('hapi-authorization', () => {
 
 			it('validates that the aclQuery parameter is a function', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4040,7 +4073,7 @@ describe('hapi-authorization', () => {
 
 			it('fetches the wanted entity using the query', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4063,7 +4096,7 @@ describe('hapi-authorization', () => {
 
 			it('handles not found entities', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4085,7 +4118,7 @@ describe('hapi-authorization', () => {
 
 			it('handles query errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4110,7 +4143,7 @@ describe('hapi-authorization', () => {
 
 			it('requires aclQuery when validateEntityAcl is true', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4131,7 +4164,7 @@ describe('hapi-authorization', () => {
 
 			it('returns an error when the entity was not found', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4156,7 +4189,7 @@ describe('hapi-authorization', () => {
 
 			it('declines requests from unauthorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4182,7 +4215,7 @@ describe('hapi-authorization', () => {
 
 			it('handles validator errors', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4208,7 +4241,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for authorized users', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4241,7 +4274,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity has no user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4267,7 +4300,7 @@ describe('hapi-authorization', () => {
 
 			it('returns error when the entity doesn\'t belong to the authenticated user', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4293,7 +4326,7 @@ describe('hapi-authorization', () => {
 
 			it('returns the response for user with permissions', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4319,7 +4352,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom user id field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
@@ -4346,7 +4379,7 @@ describe('hapi-authorization', () => {
 
 			it('handles custom entity user field', (done) => {
 				const server = new Hapi.Server();
-				
+
 				server.auth.scheme('custom', internals.authSchema);
 				server.auth.strategy('default', 'custom', {});
 
