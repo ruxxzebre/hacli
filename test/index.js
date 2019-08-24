@@ -320,8 +320,7 @@ describe('hapi-authorization', () => {
 		server.register(plugin, {}).catch((err) => {
 			expect(err).to.not.be.undefined;
 			expect(err).to.be.instanceOf(Error);
-			console.log(err.message)
-			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array "roleHierarchy" must be an object');
+			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array');
 			done();
 		});
 	});
