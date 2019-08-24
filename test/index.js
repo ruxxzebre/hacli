@@ -320,7 +320,7 @@ describe('hapi-authorization', () => {
 		server.register(plugin, {}).catch((err) => {
 			expect(err).to.not.be.undefined;
 			expect(err).to.be.instanceOf(Error);
-			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array');
+			expect(err.message).to.equal('Invalid plugin options (Invalid settings) ValidationError: "roleHierarchy" must be an array "roleHierarchy" must be an object');
 			done();
 		});
 	});
@@ -2148,8 +2148,7 @@ describe('hapi-authorization', () => {
 				server.register(plugin, {}).then(() => {
 					server.inject({method: 'GET', url: '/', credentials: {role: 'ADMIN'}}).then((res) => {
 						internals.asyncCheck(() => {
-							expect(res.statusCode).to.equal(200);
-							expect(res.payload).to.equal('Authorized');
+							expect(res.statusCode).to.equal(403);
 						}, done);
 					});
 				});
@@ -3702,8 +3701,7 @@ describe('hapi-authorization', () => {
 				server.register(plugin, {}).then(() => {
 					server.inject({method: 'GET', url: '/', credentials: {role: 'ADMIN'}}).then((res) => {
 						internals.asyncCheck(() => {
-							expect(res.payload).to.equal('Authorized');
-							expect(res.statusCode).to.equal(200);
+							expect(res.statusCode).to.equal(403);
 						}, done);
 					});
 				});
