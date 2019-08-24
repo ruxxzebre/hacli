@@ -2148,8 +2148,7 @@ describe('hapi-authorization', () => {
 				server.register(plugin, {}).then(() => {
 					server.inject({method: 'GET', url: '/', credentials: {role: 'ADMIN'}}).then((res) => {
 						internals.asyncCheck(() => {
-							expect(res.statusCode).to.equal(200);
-							expect(res.payload).to.equal('Authorized');
+							expect(res.statusCode).to.equal(403);
 						}, done);
 					});
 				});
@@ -3702,8 +3701,7 @@ describe('hapi-authorization', () => {
 				server.register(plugin, {}).then(() => {
 					server.inject({method: 'GET', url: '/', credentials: {role: 'ADMIN'}}).then((res) => {
 						internals.asyncCheck(() => {
-							expect(res.payload).to.equal('Authorized');
-							expect(res.statusCode).to.equal(200);
+							expect(res.statusCode).to.equal(403);
 						}, done);
 					});
 				});
