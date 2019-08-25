@@ -1,6 +1,6 @@
 {
   "name": "@antoniogiordano/hacli",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "ACL support for hapijs apps based on roles and permissions hierarchy",
   "main": "index.js",
   "scripts": {
