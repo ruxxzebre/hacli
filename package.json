@@ -1,7 +1,7 @@
 {
-  "name": "hapi-authorization",
-  "version": "4.0.0",
-  "description": "ACL support for hapijs apps",
+  "name": "@antoniogiordano/hacli",
+  "version": "0.0.0",
+  "description": "ACL support for hapijs apps based on roles and permissions hierarchy",
   "main": "index.js",
   "scripts": {
     "test": "mocha test",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:toymachiner62/hapi-authorization.git"
+    "url": "git@github.com:antoniogiordano/hapi-authorization.git"
   },
   "keywords": [
     "hapi",
@@ -19,21 +19,16 @@
   ],
   "contributors": [
     {
-      "name": "Asaf David",
-      "email": "asafdav@gmail.com",
-      "url": "http://about.me/asafdavid"
-    },
-    {
-      "name": " Tom Caflisch",
-      "email": "tomcaflisch@gmail.com",
-      "url": "https://github.com/toymachiner62"
+      "name": "Antonio Giordano",
+      "email": "antonio.giordano@getapper.com",
+      "url": "http://www.getapper.com"
     }
   ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/toymachiner62/hapi-authorization/issues"
+    "url": "https://github.com/antoniogiordano/hapi-authorization/issues"
   },
-  "homepage": "https://github.com/toymachiner62/hapi-authorization",
+  "homepage": "https://github.com/antoniogiordano/hapi-authorization",
   "engines": {
     "node": ">=8.9.0"
   },
@@ -53,6 +48,6 @@
     "mocha": "^2.3.4"
   },
   "peerDependencies": {
-    "hapi": ">= 10"
+    "hapi": ">= 17"
   }
 }

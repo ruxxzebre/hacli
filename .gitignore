@@ -4,3 +4,4 @@ npm-debug.log
 lib-cov
 coverage.html
 yarn.lock
+package-json.lock
