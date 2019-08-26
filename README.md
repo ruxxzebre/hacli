@@ -363,7 +363,7 @@ You must define your auth strategy before defining your routes, otherwise the ro
 ## Plugin Config
 
 * `permissions` 				- `Array|Object`: All the possible permissions. Defaults to permissions list [`SUPER_ADMIN`, `ADMIN`, `USER`, `GUEST`]. Can be an hierarchy object where every key is a permission, and can or not contain other permission keys. The "leaves" of the object (permission keys without sub-permissions) should any way be empty object.
-* `userPath` 				    - `String`: Where hacli should look for user object inside the request object. Defaults to "auth.credentials", that resolves to request.auth.credentials.user. 
+* `userPath` 				    - `String`: Where hacli should look for user object inside the request object. Defaults to "auth.credentials", that resolves to request.auth.credentials 
 
 
 
